@@ -12,16 +12,30 @@ import time
 from common.logs import get_logger
 logger = get_logger(__name__)
 
-log_file='timelog.txt'
 
+def create_measurements():
+    log_file = 'timelog.txt'
+    total_time = 0.0
+    myfile = open('timelog.txt', 'a')
+    for i in range(0, 500):
+        datetime_now = datetime.now().isoformat()
+        start = time.time()
+        result = t.streams.create_measurement(inst_id='Ohio_River_Robert_C_Byrd_Locks',
+                                              vars=[{"var_id": "temp", "value": randint(10, 100)},
+                                                    {"var_id": "spc", "value": randint(240, 300)},
+                                                    {"var_id": "turb", "value": randint(10, 19)},
+                                                    {"var_id": "ph", "value": randint(1, 10)},
+                                                    {"var_id": "batv", "value": round(random.uniform(10, 13), 2)}],
+                                              datetime=datetime_now, _tapis_debug=True)
+        elapsed = time.time() - start
+        total_time = round(elapsed, 2) + total_time
+        myfile.write(str(i) + ":" + str(round(elapsed, 2)) + "\n")
+        logger.debug("Measurement creation")
+        logger.debug(result)
+    print(total_time/200.0)
+    myfile.close()
 
-## Enter the username and password for test accounts on dev
-if __name__ == "__main__":
-    t = DynaTapy(base_url='https://dev.develop.tapis.io', username='', account_type='user', password='', tenant_id='dev')
-    t.get_tokens()
-
-    # Uncomment this for creating projects, site, instruments, variables
-    '''
+def create_project_site_inst_var():
     ## Create Project
     result, debug = t.streams.create_project(project_name='wq_demo_project',description='project for early adopters demo',
                                              owner='testuser6', pi='ajamthe', funding_resource='tapis', project_url='test.tacc.utexas.edu',
@@ -80,22 +94,10 @@ if __name__ == "__main__":
                                               _tapis_debug=True)
     logger.debug("Ph Variable creation")
     logger.debug(result)
-    '''
-    total_time = 0.0
 
-    myfile = open('timelog.txt', 'a')
-    for i in range(0,100):
-        datetime_now = datetime.now().isoformat()
-        start = time.time()
-        result = t.streams.create_measurement(inst_id='Ohio_River_Robert_C_Byrd_Locks', vars=[{"var_id": "temp", "value": randint(10,100)},
-                    {"var_id": "spc", "value": randint(240,300) },
-                    {"var_id": "turb", "value": randint(10,19)},
-                    {"var_id": "ph", "value": randint(1,10)},
-                    {"var_id": "batv", "value": round(random.uniform(10,13),2)}], datetime=datetime_now, _tapis_debug = True)
-        elapsed = time.time() - start
-        total_time = round(elapsed,2) + total_time
-        myfile.write(str(i) +":" + str(round(elapsed,2))+ "\n")
-        logger.debug("Measurement creation")
-        logger.debug(result)
-    print(total_time/100.0)
-    myfile.close()
+## Enter the username and password for test accounts on dev
+if __name__ == "__main__":
+    t = DynaTapy(base_url='https://dev.develop.tapis.io', username='testuser6', account_type='user', password='testuser6', tenant_id='dev')
+    t.get_tokens()
+    #create_project_site_inst_var()
+    create_measurements()
