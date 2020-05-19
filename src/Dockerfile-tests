@@ -1,0 +1,18 @@
+ # image: tapis/pysdk-tests
+FROM tapis/dynatapy
+
+ADD requirements.txt /home/tapis/tests/requirements.txt
+
+USER root
+RUN pip install -r /home/tapis/tests/requirements.txt
+# RUN chmod -R tapis:tapis /home/tapis
+
+User tapis
+ADD simulator.py /home/tapis/simulator.py
+#ADD configschema.json /home/tapis/configschema.json
+#ADD config-dev-develop.json /home/tapis/config.json
+add timelog.txt /home/tapis/timelog.txt
+
+
+ENTRYPOINT ["python", "/home/tapis/simulator.py"]
+
