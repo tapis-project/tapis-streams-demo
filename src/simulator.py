@@ -15,23 +15,26 @@ def create_measurements_streams():
     log_file = 'timelog.txt'
     total_time = 0.0
     myfile = open('timelog.txt', 'a')
-    for i in range(0, 1000):
+    for i in range(0, 5):
         datetime_now = datetime.now().isoformat()
         start = time.time()
+        temp = randint(85, 100)
         result = t.streams.create_measurement(inst_id='Ohio_River_Robert_C_Byrd_Locks',
-                                              vars=[{"var_id": "temp", "value": randint(80, 100)},
+                                              vars=[{"var_id": "temp", "value": temp },
                                                     {"var_id": "spc", "value": randint(240, 300)},
                                                     {"var_id": "turb", "value": randint(10, 19)},
                                                     {"var_id": "ph", "value": randint(1, 10)},
                                                     {"var_id": "batv", "value": round(random.uniform(10, 13), 2)}],
                                               datetime=datetime_now, _tapis_debug=True)
-        elapsed = time.time() - start
-        total_time = round(elapsed, 2) + total_time
-        myfile.write(str(i) + ":" + str(round(elapsed, 2)) + "\n")
-        print("Measurement creation")
-       # print(result)
-    print(total_time/1000.0)
-    myfile.close()
+
+        #time.sleep(60.0)
+        #elapsed = time.time() - start
+        #total_time = round(elapsed, 2) + total_time
+       # myfile.write(str(i) + ":" + str(round(elapsed, 2)) + "\n")
+        #print("Measurement creation")
+        print(temp)
+    #print(total_time/5.0)
+    #myfile.close()
 
 
 # Download measurements with Streams API
@@ -116,18 +119,26 @@ def create_project_site_inst_var():
 
 ## Create templates and channels
 def create_template():
-    result,debug = t.streams.create_template(template_id='demo_wq_data_test_template3', type='stream', script='var period=5s\n '
+    '''
+    result,debug = t.streams.create_template(template_id='demo_wq_data_test_template10', type='stream', script='var periodCount=1\n '
                     'var every=0s\n var crit lambda \n var channel_id string\n stream\n    |from()\n        .measurement(\'tsdata\')\n        '
                     ' .groupBy(\'var\')\n     |window()\n        .period(period)\n         .every(every)\n         .align()\n     |alert()\n       '
                     ' .id(channel_id +  \' {{ .Name }}/{{ .Group }}/{{.TaskName}}/{{index .Tags \"var\" }}\')\n         .crit(crit)\n       '
                     '  .message(\'{{.ID}} is {{ .Level}} at time: {{.Time}} as value: {{ index .Fields \"value\" }} exceeded the threshold\')\n       '
                     ' .details(\'\')\n         .post()\n         .endpoint(\'api-alert\')\n     .captureResponse()\n    |httpOut(\'msg\')', _tapis_debug=True)
-
+    '''
+    result, debug = t.streams.create_template(template_id='demo_wq_data_test_template12', type='stream',
+                                              script='var periodCount=1\n '
+                                                     'var every=0s\n var crit lambda \n var channel_id string\n stream\n    |from()\n        .measurement(\'tsdata\')\n        '
+                                                     ' .groupBy(\'var\')\n   |alert()\n       '
+                                                     ' .id(channel_id +  \' {{ .Name }}/{{ .Group }}/{{.TaskName}}/{{index .Tags \"var\" }}\')\n         .crit(crit)\n    .noRecoveries()\n      '
+                                                     '  .message(\'{{.ID}} is {{ .Level}} at time: {{.Time}} as value: {{ index .Fields \"value\" }} exceeded the threshold\')\n       '
+                                                     ' .details(\'\')\n         .post()\n         .endpoint(\'api-alert\')\n     .captureResponse()\n    |httpOut(\'msg\')', _tapis_debug=True)
     # Actor id=7kxayXzzX63oY, nonce= TACC-PROD_Xr3LW5MOZXGkv, maxUses =100
 
 def create_channel():
-    result,debug =  t.streams.create_channels(channel_id='demo_wq_test_3', channel_name='demo.wq.test', template_id='demo_wq_data_test_template3',
-                                              triggers_with_actions=[{"inst_ids":"Ohio_River_Robert_C_Byrd_Locks","condition":{"key":"Ohio_River_Robert_C_Byrd_Locks.temp","operator":">", "val":"90"}, "action":{"method":"ACTOR"," actor_id":"7kxayXzzX63oY","message":"Instrument: Ohio_River_Robert_C_Byrd_Locks temp exceeded threshold", "abaco_base_url":"https://api.tacc.utexas.edu","nonces":"TACC-PROD_1kqBLDGaxxJY3"}}]
+    result,debug =  t.streams.create_channels(channel_id='demo_wq_test_32', channel_name='demo.wq.test', template_id='demo_wq_data_test_template12',
+                                              triggers_with_actions=[{"inst_ids":["Ohio_River_Robert_C_Byrd_Locks"],"condition":{"key":"Ohio_River_Robert_C_Byrd_Locks.temp","operator":">", "val":90}, "action":{"method":"ACTOR","actor_id" :"4VQZ540z1P3Gm","message":"Instrument: Ohio_River_Robert_C_Byrd_Locks temp exceeded threshold", "abaco_base_url":"https://api.tacc.utexas.edu","nonces":"TACC-PROD_7KZppEa8Vrrm3"}}]
                                               ,_tapis_debug=True)
 
 if __name__ == "__main__":
